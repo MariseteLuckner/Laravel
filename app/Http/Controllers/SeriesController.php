@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NovaSerie;
 use App\Http\Requests\SeriesFormRequest;
 use App\Models\Episodio;
 use App\Models\Serie;
 use App\Models\Temporada;
+use App\Models\User;
 use App\Services\CriadorDeSerie;
 use App\Services\RemovedorDeSerie;
 use Illuminate\Http\Request;
@@ -28,14 +30,27 @@ class SeriesController extends Controller
 
     public function store(SeriesFormRequest $request, CriadorDeSerie $criadorDeSerie)
     {
+         $capa = null;
+            if ($request->hasFile('capa'))
+            {
+                $capa = $request->file('capa')->store('public/serie');
+            }
+
         $serie = $criadorDeSerie->criarSerie(
             $request->nome,
             $request->qtd_temporadas,
-            $request->ep_por_temporada
+            $request->ep_por_temporada,
+            $capa
         );
 
-       $request->session()
-           ->flash(
+            $eventoNovaSerie = new NovaSerie(
+                $request->nome,
+                $request->qtd_temporadas,
+                $request->ep_por_temporada
+            );
+            event($eventoNovaSerie);
+            $request->session()
+              ->flash(
                'mensagem',
                "Série {$serie->id} e duas temporadas e episódios criados com sucesso {$serie->nome}");
 
