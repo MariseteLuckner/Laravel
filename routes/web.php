@@ -52,3 +52,28 @@ Route::get('/sair', function () {
     return redirect('/entrar');
 });
 
+Route::get('/visualisando-email', function () {
+    return new \App\Mail\NovaSerie(
+        'Arrow',
+        5,
+        10
+    );
+});
+
+Route::get('/enviando-email', function () {
+    $email =  new \App\Mail\NovaSerie(
+        'Arrow',
+        5,
+        10
+    );
+    $email->subject = 'Nova Série Adicionada';
+
+    $user = (object)[
+        'email' => 'mari@teste.com',
+        'nome'  => 'Mari'
+
+    ];
+    \Illuminate\Support\Facades\Mail::to($user)->send($email);
+    return 'Email enviado!';
+});
+
